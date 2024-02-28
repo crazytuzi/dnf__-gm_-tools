@@ -40,19 +40,23 @@
                     <DataGridTextColumn
                         Width="100"
                         Binding="{Binding LogId}"
-                        Header="活动编号" />
+                        Header="活动编号"
+                        IsReadOnly="true" />
                     <DataGridTextColumn
                         Width="300"
                         Binding="{Binding EventExplain}"
-                        Header="活动名" />
+                        Header="活动名"
+                        IsReadOnly="true" />
                     <DataGridTextColumn
                         Width="80"
                         Binding="{Binding Parameter1}"
-                        Header="参数1" />
+                        Header="参数1"
+                        IsReadOnly="true" />
                     <DataGridTextColumn
                         Width="80"
                         Binding="{Binding Parameter2}"
-                        Header="参数2" />
+                        Header="参数2"
+                        IsReadOnly="true" />
                 </DataGrid.Columns>
             </DataGrid>
         </GroupBox>
@@ -89,7 +93,7 @@
 
         <Grid Grid.Row="1" Grid.Column="1">
             <Grid.RowDefinitions>
-                <RowDefinition Height="0.5*" />
+                <RowDefinition Height="0.7*" />
                 <RowDefinition Height="auto" />
                 <RowDefinition Height="*" />
             </Grid.RowDefinitions>
@@ -128,7 +132,10 @@
                 Foreground="Red"
                 Text="{Binding Msg}" />
 
-            <GroupBox Grid.Row="2" Header="活动信息">
+            <GroupBox
+                Grid.Row="2"
+                Header="活动信息"
+                Style="{StaticResource GroupBoxTab}">
                 <StackPanel>
                     <StackPanel
                         HorizontalAlignment="Left"

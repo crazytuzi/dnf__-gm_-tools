@@ -86,7 +86,7 @@ namespace AY.DNF.GMTool.ActivityEvent.ViewModels
                 SetProperty(ref _msg, value);
                 Task.Run(() =>
                 {
-                    Task.Delay(1000);
+                    Task.Delay(2000);
                     Msg = null;
                 });
             }
