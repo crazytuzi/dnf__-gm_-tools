@@ -3,6 +3,7 @@ using AY.DNF.GMTool.Db.Services;
 using HandyControl.Controls;
 using Prism.Commands;
 using Prism.Mvvm;
+using Prism.Services.Dialogs;
 using System;
 using System.Collections.ObjectModel;
 using System.Windows.Input;
@@ -11,6 +12,8 @@ namespace AY.DNF.GMTool.ActivityEvent.ViewModels
 {
     class ActivityEventPageViewModel : BindableBase
     {
+        IDialogService _dialogSer;
+
         #region 属性
 
         private ObservableCollection<ActivityEventModel> _activities = new();
@@ -23,7 +26,7 @@ namespace AY.DNF.GMTool.ActivityEvent.ViewModels
             set { SetProperty(ref _activities, value); }
         }
 
-        private ObservableCollection<EventInfoModel> _activityEvents = new ();
+        private ObservableCollection<EventInfoModel> _activityEvents = new();
         /// <summary>
         /// 可添加活动事件
         /// </summary>
@@ -148,10 +151,18 @@ namespace AY.DNF.GMTool.ActivityEvent.ViewModels
         /// </summary>
         public ICommand DeleteCurrentActivityCommand => _deleteCurrentActivityCommand ??= new DelegateCommand(DoDeleteCurrentActivityCommand);
 
+        ICommand? _addEventDialogCommand;
+        /// <summary>
+        /// 小白添加活动
+        /// </summary>
+        public ICommand AddEventDialogCommand => _addEventDialogCommand ??= new DelegateCommand(DoAddEventDialogCommand);
+
         #endregion
 
-        public ActivityEventPageViewModel()
+        public ActivityEventPageViewModel(IDialogService dialogService)
         {
+            _dialogSer = dialogService;
+
             DoRefreshCurrentActivitiesCommand();
 
             LoadEvents();
@@ -223,6 +234,14 @@ namespace AY.DNF.GMTool.ActivityEvent.ViewModels
             DelEnabled = false;
 
             DoRefreshCurrentActivitiesCommand();
+        }
+
+        void DoAddEventDialogCommand()
+        {
+            _dialogSer.ShowDialog("AddEventDialog", dr =>
+            {
+                DoRefreshCurrentActivitiesCommand();
+            });
         }
     }
 }

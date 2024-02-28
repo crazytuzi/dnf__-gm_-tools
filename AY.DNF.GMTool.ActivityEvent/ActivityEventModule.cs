@@ -13,6 +13,7 @@ namespace AY.DNF.GMTool.ActivityEvent
 
         public void RegisterTypes(IContainerRegistry containerRegistry)
         {
+            containerRegistry.RegisterDialog<AddEventDialog>("AddEventDialog");
             containerRegistry.RegisterForNavigation<ActivityEventPage>(nameof(ActivityEventModule));
         }
     }

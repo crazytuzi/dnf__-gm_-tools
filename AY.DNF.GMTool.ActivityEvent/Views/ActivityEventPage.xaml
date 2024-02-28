@@ -24,7 +24,8 @@
             Margin="3"
             FontSize="16"
             FontWeight="Bold"
-            Header="当前活动列表">
+            Header="当前活动列表"
+            Style="{StaticResource GroupBoxTab}">
             <DataGrid
                 AutoGenerateColumns="False"
                 Background="Transparent"
@@ -59,7 +60,8 @@
         <GroupBox
             Grid.Row="1"
             FontWeight="Bold"
-            Header="活动列表">
+            Header="活动列表"
+            Style="{StaticResource GroupBoxTab}">
             <DataGrid
                 AutoGenerateColumns="False"
                 Background="Transparent"
@@ -92,11 +94,11 @@
                 <RowDefinition Height="*" />
             </Grid.RowDefinitions>
 
-            <StackPanel
+            <UniformGrid
                 Margin="3"
                 HorizontalAlignment="Left"
                 VerticalAlignment="Center"
-                Orientation="Horizontal">
+                Columns="2">
                 <Button
                     Width="120"
                     Height="40"
@@ -110,7 +112,13 @@
                     Command="{Binding DeleteCurrentActivityCommand}"
                     Content="删除当前活动"
                     IsEnabled="{Binding DelEnabled}" />
-            </StackPanel>
+                <Button
+                    Width="120"
+                    Height="40"
+                    Margin="3"
+                    Command="{Binding AddEventDialogCommand}"
+                    Content="小白添加活动" />
+            </UniformGrid>
 
             <TextBlock
                 Grid.Row="1"
