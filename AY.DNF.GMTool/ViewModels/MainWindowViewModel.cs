@@ -5,6 +5,7 @@ using AY.DNF.GMTool.Db;
 using AY.DNF.GMTool.Db.Models;
 using AY.DNF.GMTool.Db.Services;
 using AY.DNF.GMTool.Enums;
+using AY.DNF.GMTool.Helpers;
 using AY.DNF.GMTool.Models;
 using HandyControl.Controls;
 using Newtonsoft.Json;
@@ -34,6 +35,8 @@ namespace AY.DNF.GMTool.ViewModels
         readonly Task _timeTask;
         readonly CancellationTokenSource _timeTaskCancelTokenSource;
 
+
+
         #region 属性
 
         private string _title = "DNF GM Tool";
@@ -46,6 +49,8 @@ namespace AY.DNF.GMTool.ViewModels
             set { SetProperty(ref _title, value); }
         }
 
+        #region 版本相关
+
         private string _version = "1.0.20240221";
         /// <summary>
         /// 显示的自定义版本号
@@ -55,6 +60,33 @@ namespace AY.DNF.GMTool.ViewModels
             get { return _version; }
             set { SetProperty(ref _version, value); }
         }
+
+        private string? _lastReleaseVersion;
+        /// <summary>
+        /// 最后发布版本
+        /// </summary>
+        public string? LastReleaseVersion
+        {
+            get { return _lastReleaseVersion; }
+            set { SetProperty(ref _lastReleaseVersion, value); }
+        }
+
+        string? _lastVersionBody = string.Empty;
+        public string? LastVersionBody
+        {
+            get { return _lastVersionBody; }
+            set { SetProperty(ref _lastVersionBody, value); }
+        }
+
+        private Visibility _isShowDownload;
+
+        public Visibility IsShowDownload
+        {
+            get { return _isShowDownload; }
+            set { SetProperty(ref _isShowDownload, value); }
+        }
+
+        #endregion
 
         private DateTime _sysTime;
         /// <summary>
@@ -242,6 +274,21 @@ namespace AY.DNF.GMTool.ViewModels
             Application.Current.Shutdown();
         });
 
+        ICommand? _showLastVersionInfoCommand;
+        /// <summary>
+        /// 显示最后更新版本信息
+        /// </summary>
+        public ICommand ShowLastVersionInfoCommand => _showLastVersionInfoCommand ??= new DelegateCommand(DoShowLastVersionInfoCommand);
+
+        ICommand? _gotoDownloadCommand;
+
+        public ICommand GotoDownloadCommand => _gotoDownloadCommand ??= new DelegateCommand(() =>
+        {
+            Process.Start(new ProcessStartInfo($"https://gitee.com/AsakuraYou/dnf__-gm_-tools/releases/tag/{_lastReleaseVersion}")
+            {
+                UseShellExecute = true
+            });
+        });
 
         public MainWindowViewModel(IModuleManager moduleManager, IRegionManager regionManager)
         {
@@ -272,8 +319,35 @@ namespace AY.DNF.GMTool.ViewModels
             {
                 Task.Delay(5000);
                 Growl.Info("首次使用，请先进行Script.pvf导入，以便生成基础数据\r\n若版本更换也需重新导入Script.pvf");
+
+                GetLastVersion();
             });
         }
+
+        void GetLastVersion()
+        {
+            _lastVersionBody = string.Empty;
+
+            var verInfo = VersionHelper.Get();
+
+            if (!verInfo.HasValue)
+            {
+                Growl.Error("获取版本信息失败");
+                return;
+            }
+
+            LastReleaseVersion = verInfo.Value.tag_name;
+
+            var hasUpdate = VersionHelper.HasUpdate(Version, verInfo.Value.tag_name);
+            if (hasUpdate)
+                IsShowDownload = Visibility.Visible;
+            else
+                IsShowDownload = Visibility.Hidden;
+
+            _lastVersionBody = verInfo.Value.body;
+        }
+
+        #region 命令实现
 
         /// <summary>
         /// 数据库连接
@@ -473,6 +547,16 @@ namespace AY.DNF.GMTool.ViewModels
 
             ps.Start();
         }
+
+        /// <summary>
+        /// 显示最后版本信息
+        /// </summary>
+        void DoShowLastVersionInfoCommand()
+        {
+            HandyControl.Controls.MessageBox.Show(_lastVersionBody, _lastReleaseVersion);
+        }
+
+        #endregion
 
         #region 连接配置
 

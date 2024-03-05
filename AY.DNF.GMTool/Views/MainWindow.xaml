@@ -396,10 +396,37 @@
             Grid.ColumnSpan="2"
             TextBlock.FontSize="10">
             <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="200" />
+                <ColumnDefinition Width="300" />
                 <ColumnDefinition />
                 <ColumnDefinition Width="200" />
             </Grid.ColumnDefinitions>
+
+            <StackPanel
+                HorizontalAlignment="Left"
+                VerticalAlignment="Center"
+                Orientation="Horizontal">
+                <TextBlock
+                    Margin="3"
+                    HorizontalAlignment="Left"
+                    VerticalAlignment="Center"
+                    Foreground="CadetBlue"
+                    Text="{Binding LastReleaseVersion, StringFormat=最新版本号：{0}}" />
+
+                <Button
+                    Margin="3,0,0,0"
+                    BorderThickness="0"
+                    Command="{Binding ShowLastVersionInfoCommand}"
+                    Content="[ 查看 ]" />
+
+                <Button
+                    Margin="3,0,0,0"
+                    BorderThickness="0"
+                    Command="{Binding GotoDownloadCommand}"
+                    Content="[ 去下载 ]"
+                    Visibility="{Binding IsShowDownload}" />
+
+
+            </StackPanel>
 
             <TextBlock
                 Grid.Column="2"
