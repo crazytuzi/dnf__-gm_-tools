@@ -8,6 +8,7 @@ using AY.DNF.GMTool.Enums;
 using AY.DNF.GMTool.Helpers;
 using AY.DNF.GMTool.Models;
 using HandyControl.Controls;
+using Microsoft.International.Converters.TraditionalChineseToSimplifiedConverter;
 using Newtonsoft.Json;
 using Prism.Commands;
 using Prism.Modularity;
@@ -610,6 +611,9 @@ namespace AY.DNF.GMTool.ViewModels
         void DoTestCommand()
         {
             var npkFilePath = @"D:\99Game\游蝶新客户端95黑金5\ImagePacks2\sprite_item.NPK";
+
+            //var tmpA = ChineseConverter.Convert("加持的重生之魂手鐲 : [改裝 : G-3捕食者]", ChineseConversionDirection.SimplifiedToTraditional);
+
             var npkFile = new NpkFile(npkFilePath);
             var sprite = npkFile.NpkFiles[0].Images[94];
             var imgData = sprite.ImageBytes;
