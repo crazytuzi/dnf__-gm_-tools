@@ -93,14 +93,6 @@ namespace AY.DNF.GMTool.Db
                     IsAutoCloseConnection = true,
                 });
 
-                //_localDb = new SqlSugarScope(new ConnectionConfig
-                //{
-                //    DbType = DbType.Access,
-                //    ConfigId = "local",
-                //    ConnectionString = $"Provider = Microsoft.ACE.OLEDB.12.0; Data Source = {Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "LocalData", "DNF.mdb")}",
-                //    IsAutoCloseConnection = true
-                //});
-
                 var sqliteDb = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "LocalData", "dnf.db");
                 _gmToolDb = new SqlSugarScope(new ConnectionConfig
                 {
@@ -114,7 +106,6 @@ namespace AY.DNF.GMTool.Db
                 _taiwanCain.Ado.CheckConnection();
                 _taiwanBillinig.Ado.CheckConnection();
                 _taiwanCain2nd.Ado.CheckConnection();
-                //_localDb.Ado.CheckConnection();
 
                 if (!_gmToolDb.DbMaintenance.IsAnyTable("Equipments"))
                     _gmToolDb.CodeFirst.InitTables(typeof(Equipments));

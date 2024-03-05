@@ -26,6 +26,9 @@ namespace AY.DNF.GMTool.Pvf.ViewModels
             {"0", "白装"},{"1","蓝装"},{"2","紫装"},{"3","粉装"},{"4","史诗"},{"5","勇者"},{"6","传说"},{"7","神话"}
         };
 
+        Encoding _pvfEncoding = Encoding.GetEncoding("gb2312");
+        string _orgPvfTestWrod;
+
         #region 属性
 
         private string? _pvfPath;
@@ -35,7 +38,13 @@ namespace AY.DNF.GMTool.Pvf.ViewModels
         public string? PvfPath
         {
             get { return _pvfPath; }
-            set { SetProperty(ref _pvfPath, value); }
+            set
+            {
+                SetProperty(ref _pvfPath, value);
+
+                _orgPvfTestWrod = string.Empty;
+                PvfTestWord = string.Empty;
+            }
         }
 
         private Visibility _isInAnalysis = Visibility.Hidden;
@@ -44,6 +53,51 @@ namespace AY.DNF.GMTool.Pvf.ViewModels
         {
             get { return _isInAnalysis; }
             set { SetProperty(ref _isInAnalysis, value); }
+        }
+
+        private List<EncodingItem> _listEncoding = new()
+        {
+            new EncodingItem{Key="日语",Value="shift_jis"},
+            new EncodingItem{Key="韩语",Value="ks_c_5601-1987"},
+            new EncodingItem{Key="台湾",Value="big5"},
+            new EncodingItem{Key="简体中文",Value="gb2312"},
+            new EncodingItem{Key="Unicode",Value="Unicode"},
+            new EncodingItem{Key="UTF8",Value="UTF8"}
+        };
+        public List<EncodingItem> ListEncoding
+        {
+            get { return _listEncoding; }
+            set { SetProperty(ref _listEncoding, value); }
+        }
+
+
+        private string? _pvfTestWord;
+        /// <summary>
+        /// 从PVF文件中读取的测试字符
+        /// </summary>
+        public string? PvfTestWord
+        {
+            get { return _pvfTestWord; }
+            set { SetProperty(ref _pvfTestWord, value); }
+        }
+
+        private EncodingItem? _selectedEncoding;
+        /// <summary>
+        /// PVF 字符集
+        /// </summary>
+        public EncodingItem? SelectedEncoding
+        {
+            get { return _selectedEncoding; }
+            set
+            {
+                SetProperty(ref _selectedEncoding, value);
+                if (value.Value == "Unicode")
+                    _pvfEncoding = Encoding.Unicode;
+                else if (value.Value == "UTF8")
+                    _pvfEncoding = Encoding.UTF8;
+                else
+                    _pvfEncoding = Encoding.GetEncoding(value.Value);
+            }
         }
 
         #endregion
@@ -141,11 +195,15 @@ namespace AY.DNF.GMTool.Pvf.ViewModels
         /// </summary>
         public ICommand PvfParseCommand => _pvfParseCommand ??= new DelegateCommand(DoPvfParseCommand);
 
+        ICommand? _testPvfEncodingCommand;
+
+        public ICommand TestPvfEncodingCommand => _testPvfEncodingCommand ??= new DelegateCommand(TestPvfEncoding);
+
         #endregion
 
         public PvfPageViewModel()
         {
-
+            SelectedEncoding = ListEncoding[3];
         }
 
         /// <summary>
@@ -180,6 +238,60 @@ namespace AY.DNF.GMTool.Pvf.ViewModels
             });
         }
 
+        void TestPvfEncoding()
+        {
+            if (string.IsNullOrWhiteSpace(PvfPath))
+            {
+                Growl.Warning("请先选择PVF文件");
+                return;
+            }
+
+            // 已有测试串
+            if (!string.IsNullOrWhiteSpace(PvfTestWord))
+            {
+                PvfTestWord = Encoding.GetEncoding("gb2312").GetString(_pvfEncoding.GetBytes(_orgPvfTestWrod));
+                PvfTestWord = ChineseConverter.Convert(PvfTestWord, ChineseConversionDirection.TraditionalToSimplified);
+                return;
+            }
+
+            DispatcherInfos(() => OtherLogs.Insert(0, "开始获取PVF文件中的测试内容"));
+
+            // 没有PVF解析出的测试串，则解析获取一个
+            using var pvf = new PvfFile(PvfPath);
+
+            var itemDic = pvf.GetPvfFileByPath("equipment/equipment.lst", Encoding.UTF8);
+            if (itemDic == null)
+            {
+                DispatcherInfos(() => OtherLogs.Insert(0, "未解析出装备信息，无法继续监测"));
+                return;
+            }
+
+            var itemArr = itemDic.Split("\r\n", StringSplitOptions.RemoveEmptyEntries).Where(t => !t.StartsWith('#')).ToList();
+            var total = itemArr.Count;
+
+            for (var i = 0; i < total; i++)
+            {
+                var item = itemArr[i];
+                var arr = item.Split("\t", StringSplitOptions.RemoveEmptyEntries);
+                if (arr.Length < 1) continue;
+                var id = arr[0];
+                var path = arr[1].Replace("`", "");
+                var equipEdu = pvf.GetPvfFileByPath($"equipment/{path}", Encoding.UTF8);
+                if (string.IsNullOrWhiteSpace(equipEdu)) continue;
+                var eduInfos = equipEdu.Split("\r\n", StringSplitOptions.RemoveEmptyEntries).Where(t => !t.StartsWith("#")).ToList();
+                var names = GetPvfPart(eduInfos, "[name]");
+                if (names.Count <= 0) continue;
+
+                _orgPvfTestWrod = names[0].Replace("`", "");
+
+                PvfTestWord = Encoding.GetEncoding("gb2312").GetString(_pvfEncoding.GetBytes(_orgPvfTestWrod));
+                PvfTestWord = ChineseConverter.Convert(PvfTestWord, ChineseConversionDirection.TraditionalToSimplified);
+                break;
+            }
+
+            DispatcherInfos(() => OtherLogs.Insert(0, "测试内容获取完成"));
+        }
+
         /// <summary>
         /// 解析PVF地下城数据
         /// </summary>
@@ -206,8 +318,16 @@ namespace AY.DNF.GMTool.Pvf.ViewModels
             for (var i = 0; i < total; i++)
             {
                 var dungeon = arrDungeon[i];
-                if (dungeon.StartsWith("#")) continue;
-                if (string.IsNullOrWhiteSpace(dungeon)) continue;
+                if (dungeon.StartsWith("#"))
+                {
+                    DispatcherInfos(() => DungeonCount = $"{(i + 1)}/{total}");
+                    continue;
+                }
+                if (string.IsNullOrWhiteSpace(dungeon))
+                {
+                    DispatcherInfos(() => DungeonCount = $"{(i + 1)}/{total}");
+                    continue;
+                }
                 var arr = dungeon.Replace("\r", "").Split("\t");
 
                 list.Add(new Dungeons { ItemId = arr[0], ItemName = arr[1].Replace("`", "") });
@@ -248,14 +368,24 @@ namespace AY.DNF.GMTool.Pvf.ViewModels
             {
                 var item = itemArr[i];
                 var arr = item.Split("\t", StringSplitOptions.RemoveEmptyEntries);
-                if (arr.Length < 1) continue;
+                if (arr.Length < 1)
+                {
+                    DispatcherInfos(() => EquipmentCount = $"{(i + 1)}/{total}");
+                    continue;
+                }
                 var id = arr[0];
                 var path = arr[1].Replace("`", "");
                 var equipEdu = pvf.GetPvfFileByPath($"equipment/{path}", Encoding.UTF8);
-                if (string.IsNullOrWhiteSpace(equipEdu)) continue;
+                if (string.IsNullOrWhiteSpace(equipEdu))
+                {
+                    DispatcherInfos(() => EquipmentCount = $"{(i + 1)}/{total}");
+                    continue;
+                }
                 var eduInfos = equipEdu.Split("\r\n", StringSplitOptions.RemoveEmptyEntries).Where(t => !t.StartsWith("#")).ToList();
                 var index = eduInfos.IndexOf("[name]");
                 var name = eduInfos[index + 1].Replace("`", "");
+
+                name = Encoding.GetEncoding("gb2312").GetString(_pvfEncoding.GetBytes(name));
 
                 var iconMark = GetPvfPart(eduInfos, "[icon]");
                 if (iconMark.Count <= 0)
@@ -462,16 +592,30 @@ namespace AY.DNF.GMTool.Pvf.ViewModels
                 {
                     var item = itemArr[i];
                     var arr = item.Split("\t", StringSplitOptions.RemoveEmptyEntries);
-                    if (arr.Length < 1) continue;
+                    if (arr.Length < 1)
+                    {
+                        DispatcherInfos(() => StackableCount = $"{(i + 1)}/{total}");
+                        continue;
+                    }
                     var id = arr[0];
                     var path = arr[1].Replace("`", "");
                     var stackableEdu = pvf.GetPvfFileByPath($"stackable/{path}", Encoding.UTF8);
-                    if (string.IsNullOrWhiteSpace(stackableEdu)) continue;
+                    if (string.IsNullOrWhiteSpace(stackableEdu))
+                    {
+                        DispatcherInfos(() => StackableCount = $"{(i + 1)}/{total}");
+                        continue;
+                    }
                     var eduInfos = stackableEdu.Split("\r\n", StringSplitOptions.RemoveEmptyEntries).Where(t => !t.StartsWith("#")).ToList();
 
                     var names = GetPvfPart(eduInfos, "[name]");
-                    if (names.Count <= 0) continue;
+                    if (names.Count <= 0)
+                    {
+                        DispatcherInfos(() => StackableCount = $"{(i + 1)}/{total}");
+                        continue;
+                    }
                     var name = names[0].Replace("`", "");
+
+                    name = Encoding.GetEncoding("gb2312").GetString(_pvfEncoding.GetBytes(name));
 
                     var iconMark = GetPvfPart(eduInfos, "[icon]");
                     if (iconMark.Count <= 0)
@@ -531,10 +675,14 @@ namespace AY.DNF.GMTool.Pvf.ViewModels
             var baseJob = characArr.Select(t =>
             {
                 var arr = t.Split("\t", StringSplitOptions.RemoveEmptyEntries);
+                var name = arr[1].Replace("`", "");
+
+                name = Encoding.GetEncoding("gb2312").GetString(_pvfEncoding.GetBytes(name));
+
                 return new JobTree
                 {
                     JobId = int.Parse(arr[0]),
-                    JobName = arr[1].Replace("`", ""),
+                    JobName = name,
                     GrowJobs = new List<JobTree>(),
                     ParentId = "root"
                 };
@@ -587,10 +735,13 @@ namespace AY.DNF.GMTool.Pvf.ViewModels
                 i = 0;
                 while (i < jobCount)
                 {
+                    var name = jobs[startIndex + 1 + i].Replace("`", "");
+                    name = Encoding.GetEncoding("gb2312").GetString(_pvfEncoding.GetBytes(name));
+
                     var growJob = new JobTree
                     {
                         JobId = i,
-                        JobName = ChineseConverter.Convert(jobs[startIndex + 1 + i].Replace("`", ""), ChineseConversionDirection.TraditionalToSimplified),
+                        JobName = ChineseConverter.Convert(name, ChineseConversionDirection.TraditionalToSimplified),
                         GrowJobs = new List<JobTree>(),
                         ParentId = job.Id
                     };
@@ -622,9 +773,18 @@ namespace AY.DNF.GMTool.Pvf.ViewModels
                     {
                         var index = j + growTypeIndex;
                         if (jobs[index] != "[awakening name]") continue;
-                        var tjn1 = ChineseConverter.Convert(jobs[index + 1].Replace("`", ""), ChineseConversionDirection.TraditionalToSimplified);
-                        var tjn2 = ChineseConverter.Convert(jobs[index + 2].Replace("`", ""), ChineseConversionDirection.TraditionalToSimplified);
-                        var tjn3 = ChineseConverter.Convert(jobs[index + 3].Replace("`", ""), ChineseConversionDirection.TraditionalToSimplified);
+
+                        var tjn1 = jobs[index + 1].Replace("`", "");
+                        tjn1 = Encoding.GetEncoding("gb2312").GetString(_pvfEncoding.GetBytes(tjn1));
+                        tjn1 = ChineseConverter.Convert(tjn1, ChineseConversionDirection.TraditionalToSimplified);
+
+                        var tjn2 = jobs[index + 2].Replace("`", "");
+                        tjn2 = Encoding.GetEncoding("gb2312").GetString(_pvfEncoding.GetBytes(tjn2));
+                        tjn2 = ChineseConverter.Convert(tjn2, ChineseConversionDirection.TraditionalToSimplified);
+
+                        var tjn3 = jobs[index + 3].Replace("`", "");
+                        tjn3 = Encoding.GetEncoding("gb2312").GetString(_pvfEncoding.GetBytes(tjn3));
+                        tjn3 = ChineseConverter.Convert(tjn3, ChineseConversionDirection.TraditionalToSimplified);
 
                         var tjnTree = new JobTree { JobId = 1, JobName = tjn1, ParentId = growJob.Id };
                         growJob.GrowJobs.Add(tjnTree);
@@ -724,6 +884,7 @@ namespace AY.DNF.GMTool.Pvf.ViewModels
                 // 任务名
                 var questNames = GetPvfPart(questInfos, "[name]");
                 var questName = questNames.Count <= 0 ? string.Empty : questNames[0].Replace("`", "");
+                questName = Encoding.GetEncoding("gb2312").GetString(_pvfEncoding.GetBytes(questName));
                 questName = ChineseConverter.Convert(questName, ChineseConversionDirection.TraditionalToSimplified);
 
                 var quest = new Quests
@@ -787,6 +948,7 @@ namespace AY.DNF.GMTool.Pvf.ViewModels
                                                             .ToList();
                                         var equipNames = GetPvfPart(equipInfos, "[name]");
                                         var equipName = equipNames.Count <= 0 ? "" : equipNames[0].Replace("`", "");
+                                        equipName = Encoding.GetEncoding("gb2312").GetString(_pvfEncoding.GetBytes(equipName));
                                         equipName = ChineseConverter.Convert(equipName, ChineseConversionDirection.TraditionalToSimplified);
                                         quest.QuestItemsDescription += $"{equipName}({itemCount})\r\n";
                                     }
@@ -799,6 +961,7 @@ namespace AY.DNF.GMTool.Pvf.ViewModels
                                                                .ToList();
                                         var stackableNames = GetPvfPart(stackableInfos, "[name]");
                                         var stackableName = stackableNames.Count <= 0 ? "" : stackableNames[0].Replace("`", "");
+                                        stackableName = Encoding.GetEncoding("gb2312").GetString(_pvfEncoding.GetBytes(stackableName));
                                         stackableName = ChineseConverter.Convert(stackableName, ChineseConversionDirection.TraditionalToSimplified);
                                         quest.QuestItemsDescription += $"{stackableName}({itemCount})\r\n";
                                     }
@@ -881,5 +1044,11 @@ namespace AY.DNF.GMTool.Pvf.ViewModels
                 act();
             });
         }
+    }
+
+    class EncodingItem
+    {
+        public string Key { get; set; }
+        public string Value { get; set; }
     }
 }

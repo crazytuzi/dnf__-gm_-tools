@@ -12,6 +12,7 @@
         <Grid.RowDefinitions>
             <RowDefinition Height="auto" />
             <RowDefinition Height="auto" />
+            <RowDefinition Height="auto" />
             <RowDefinition />
         </Grid.RowDefinitions>
         <Grid.ColumnDefinitions>
@@ -44,6 +45,36 @@
                 Margin="3"
                 Click="PvfFileSelectClick"
                 Content="选择" />
+
+        </StackPanel>
+
+        <StackPanel
+            Grid.Row="1"
+            Grid.ColumnSpan="4"
+            Margin="5"
+            HorizontalAlignment="Left"
+            VerticalAlignment="Center"
+            Orientation="Horizontal">
+            <TextBlock VerticalAlignment="Center" Text="PVF文件字符集测试内容：" />
+            <TextBlock
+                Width="200"
+                VerticalAlignment="Center"
+                FontSize="16"
+                Foreground="MediumSlateBlue"
+                Text="{Binding PvfTestWord}" />
+            <ComboBox
+                Width="100"
+                HorizontalContentAlignment="Center"
+                VerticalContentAlignment="Center"
+                DisplayMemberPath="Key"
+                ItemsSource="{Binding ListEncoding}"
+                SelectedValue="{Binding SelectedEncoding}" />
+            <Button
+                Width="120"
+                Height="35"
+                Margin="3"
+                Command="{Binding TestPvfEncodingCommand}"
+                Content="测试字符集" />
             <Button
                 Width="120"
                 Height="35"
@@ -52,15 +83,26 @@
                 Content="解析并导入" />
         </StackPanel>
 
+        <TextBlock
+            Grid.RowSpan="2"
+            Grid.Column="3"
+            Width="100"
+            Margin="3"
+            HorizontalAlignment="Right"
+            VerticalAlignment="Center"
+            Foreground="Red"
+            Text="不测试字符集，默认按简体中文处理"
+            TextWrapping="Wrap" />
+
         <hc:LoadingLine
-            Grid.Row="1"
+            Grid.Row="2"
             Grid.ColumnSpan="4"
             Width="300"
             Height="8"
             HorizontalAlignment="Center"
             Visibility="{Binding IsInAnalysis}" />
 
-        <Grid Grid.Row="2">
+        <Grid Grid.Row="3">
             <Grid.RowDefinitions>
                 <RowDefinition Height="auto" />
                 <RowDefinition />
@@ -76,7 +118,7 @@
             <ListBox Grid.Row="1" ItemsSource="{Binding DungeonLogs}" />
         </Grid>
 
-        <Grid Grid.Row="2" Grid.Column="1">
+        <Grid Grid.Row="3" Grid.Column="1">
             <Grid.RowDefinitions>
                 <RowDefinition Height="auto" />
                 <RowDefinition />
@@ -92,7 +134,7 @@
             <ListBox Grid.Row="1" ItemsSource="{Binding EquipmentLogs}" />
         </Grid>
 
-        <Grid Grid.Row="2" Grid.Column="2">
+        <Grid Grid.Row="3" Grid.Column="2">
             <Grid.RowDefinitions>
                 <RowDefinition Height="auto" />
                 <RowDefinition />
@@ -108,7 +150,7 @@
             <ListBox Grid.Row="1" ItemsSource="{Binding StackableLogs}" />
         </Grid>
 
-        <Grid Grid.Row="2" Grid.Column="3">
+        <Grid Grid.Row="3" Grid.Column="3">
             <Grid.RowDefinitions>
                 <RowDefinition Height="auto" />
                 <RowDefinition />
