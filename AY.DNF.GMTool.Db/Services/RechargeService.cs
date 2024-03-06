@@ -53,7 +53,10 @@ namespace AY.DNF.GMTool.Db.Services
         /// <returns></returns>
         public async Task<bool> RechargeSP(int characNo, int count)
         {
-            return await DbFrameworkScope.TaiwanCain2nd.Updateable<Skill>().SetColumns(t => t.RemainSp == t.RemainSp + count).Where(t => t.CharacNo == characNo).ExecuteCommandAsync() >= 0;
+            return await DbFrameworkScope.TaiwanCain2nd.Updateable<Skill>()
+                .SetColumns(t => t.RemainSp == t.RemainSp + count)
+                .SetColumns(t => t.RemainSp2nd == t.RemainSp2nd + count)
+                .Where(t => t.CharacNo == characNo).ExecuteCommandAsync() >= 0;
         }
 
         /// <summary>
