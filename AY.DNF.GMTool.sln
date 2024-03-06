@@ -19,9 +19,11 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AY.DNF.GMTool.ActivityEvent
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AY.DNF.GMTool.Test", "AY.DNF.GMTool.Test\AY.DNF.GMTool.Test.csproj", "{691D3099-2D41-44BF-8B1B-90AEE6188E78}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AY.DNF.GMTool.QuestTool", "AY.DNF.GMTool.QuestTool\AY.DNF.GMTool.QuestTool.csproj", "{9BBDD064-DC98-46D6-A51D-A9F42348749D}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AY.DNF.GMTool.QuestTool", "AY.DNF.GMTool.QuestTool\AY.DNF.GMTool.QuestTool.csproj", "{9BBDD064-DC98-46D6-A51D-A9F42348749D}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AY.DNF.GMTool.Common", "AY.DNF.GMTool.Common\AY.DNF.GMTool.Common.csproj", "{DB30D9D1-2676-4758-A1F6-5BEE0345A611}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AY.DNF.GMTool.Common", "AY.DNF.GMTool.Common\AY.DNF.GMTool.Common.csproj", "{DB30D9D1-2676-4758-A1F6-5BEE0345A611}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AY.DNF.GMTool.AutoUpdater", "AY.DNF.GMTool.AutoUpdater\AY.DNF.GMTool.AutoUpdater.csproj", "{347C510C-F4DB-4A68-B3C0-B7717CBBC1F1}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -69,6 +71,10 @@ Global
 		{DB30D9D1-2676-4758-A1F6-5BEE0345A611}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{DB30D9D1-2676-4758-A1F6-5BEE0345A611}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{DB30D9D1-2676-4758-A1F6-5BEE0345A611}.Release|Any CPU.Build.0 = Release|Any CPU
+		{347C510C-F4DB-4A68-B3C0-B7717CBBC1F1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{347C510C-F4DB-4A68-B3C0-B7717CBBC1F1}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{347C510C-F4DB-4A68-B3C0-B7717CBBC1F1}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{347C510C-F4DB-4A68-B3C0-B7717CBBC1F1}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

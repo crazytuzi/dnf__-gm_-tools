@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "AY.DNF.GMTool.AutoUpdater": {
+      "commandName": "Project",
+      "commandLineArgs": "https://gitee.com/AsakuraYou/dnf__-gm_-tools/releases/download/1.0.20240221/v1.0.20240221.zip"
+    }
+  }
+}
