@@ -412,11 +412,13 @@ namespace AY.DNF.GMTool.Postal.ViewModels
             }
 
             var redValue = 0;
+            var selectedRed = 0;
             if (IsRed)
             {
                 redValue = RedValue;
+                selectedRed = SelectedRed;
             }
-            var (b, i) = await new PostalService().SendPostal(int.Parse(characNo), LetterContent!, (int)SelectedItemId, Count, Forge, Strengthen, SelectedRed, redValue, IsPackaged);
+            var (b, i) = await new PostalService().SendPostal(int.Parse(characNo), LetterContent!, (int)SelectedItemId, Count, Forge, Strengthen, selectedRed, redValue, IsPackaged);
             _lastLetterId = i;
             Msg = $"发送邮件{(b ? "成功" : "失败")}";
         }
