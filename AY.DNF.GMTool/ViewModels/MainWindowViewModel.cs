@@ -8,7 +8,6 @@ using AY.DNF.GMTool.Enums;
 using AY.DNF.GMTool.Helpers;
 using AY.DNF.GMTool.Models;
 using HandyControl.Controls;
-using Microsoft.International.Converters.TraditionalChineseToSimplifiedConverter;
 using Newtonsoft.Json;
 using Prism.Commands;
 using Prism.Modularity;
@@ -19,11 +18,12 @@ using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using System.Security.Cryptography.Xml;
+using System.Net.NetworkInformation;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
+using System.Windows.Media;
 using System.Windows.Threading;
 using TiaoTiaoCode.NLogger;
 
@@ -37,7 +37,15 @@ namespace AY.DNF.GMTool.ViewModels
         readonly Task _timeTask;
         readonly CancellationTokenSource _timeTaskCancelTokenSource;
 
+        readonly Task _pingTask;
+        readonly CancellationTokenSource _pingTaskCancelTokenSource;
+
         string? _downloadUrl;
+
+        System.Drawing.Color _redStateColor = System.Drawing.Color.Red;
+        System.Drawing.Color _greenStateColor = System.Drawing.Color.LimeGreen;
+        System.Drawing.Color _redEffectColor = System.Drawing.Color.PaleVioletRed;
+        System.Drawing.Color _greenEffectColor = System.Drawing.Color.LightGreen;
 
         #region 属性
 
@@ -214,6 +222,40 @@ namespace AY.DNF.GMTool.ViewModels
             }
         }
 
+        #region 服务器状态
+
+        private SolidColorBrush _stateColor = new SolidColorBrush(Color.FromArgb(System.Drawing.Color.LightGray.A, System.Drawing.Color.LightGray.R, System.Drawing.Color.LightGray.G, System.Drawing.Color.LightGray.B));
+        /// <summary>
+        /// 状态灯颜色
+        /// </summary>
+        public SolidColorBrush StateColor
+        {
+            get { return _stateColor; }
+            set { SetProperty(ref _stateColor, value); }
+        }
+
+        private Color _effectColor;
+        /// <summary>
+        /// 状态灯效果颜色
+        /// </summary>
+        public Color EffectColor
+        {
+            get { return _effectColor; }
+            set { SetProperty(ref _effectColor, value); }
+        }
+
+        private string? _pingStateStr = "正在连接...";
+        /// <summary>
+        /// 服务器状态
+        /// </summary>
+        public string? PingStateStr
+        {
+            get { return _pingStateStr; }
+            set { SetProperty(ref _pingStateStr, value); }
+        }
+
+        #endregion
+
         #endregion
 
         #region 命令
@@ -271,6 +313,7 @@ namespace AY.DNF.GMTool.ViewModels
         public ICommand AppCloseCommand => _appCloseCommand ??= new DelegateCommand(() =>
         {
             _timeTaskCancelTokenSource.Cancel();
+            _pingTaskCancelTokenSource.Cancel();
 
             DbFrameworkScope.TaiwanCain2nd?.Close();
             DbFrameworkScope.TaiwanCain?.Close();
@@ -309,11 +352,29 @@ namespace AY.DNF.GMTool.ViewModels
                         if (ct.IsCancellationRequested) return;
 
                         SysTime = DateTime.Now;
-                        Thread.Sleep(1000);
+                        Task.Delay(1000);
                     }
                 });
             }, ct);
             _timeTask.Start();
+
+            _pingTaskCancelTokenSource = new CancellationTokenSource();
+            var pct = _pingTaskCancelTokenSource.Token;
+
+            _pingTask = new Task(() =>
+            {
+                while (true)
+                {
+                    if (ct.IsCancellationRequested) return;
+
+                    if (!string.IsNullOrWhiteSpace(Server))                    
+                        PingServer();                    
+
+                    // 第分钟ping一次
+                    Task.Delay(60 * 1000);
+                }
+            });
+            _pingTask.Start();
 
             Task.Run(() =>
             {
@@ -349,6 +410,30 @@ namespace AY.DNF.GMTool.ViewModels
             _lastVersionBody = verInfo.Value.body;
         }
 
+        async void PingServer()
+        {
+            var p = new Ping();
+            var pp = await p.SendPingAsync(Server);
+
+            if (pp.Status == IPStatus.Success && PingStateStr != "服务端已上线")
+                Application.Current.Dispatcher.Invoke(() =>
+                {
+                    StateColor = new SolidColorBrush(Color.FromArgb(_greenStateColor.A, _greenStateColor.R, _greenStateColor.G, _greenStateColor.B));
+                    EffectColor = Color.FromArgb(_greenEffectColor.A, _greenEffectColor.R, _greenEffectColor.G, _greenEffectColor.B);
+                    PingStateStr = "服务端已上线";
+                });
+
+            else if (pp.Status != IPStatus.Success)
+                Application.Current.Dispatcher.Invoke(() =>
+                {
+                    StateColor = new SolidColorBrush(Color.FromArgb(_redStateColor.A, _redStateColor.R, _redStateColor.G, _redStateColor.B));
+                    EffectColor = Color.FromArgb(_redEffectColor.A, _redEffectColor.R, _redEffectColor.G, _redEffectColor.B);
+                    PingStateStr = "服务端未上线";
+                    if (ConnectedForEnabled)
+                        DoDisconnectCommand();
+                });
+        }
+
         #region 命令实现
 
         /// <summary>
@@ -379,6 +464,8 @@ namespace AY.DNF.GMTool.ViewModels
             ConnectedForEnabled = true;
 
             WriteCfg();
+
+            PingServer();
         }
 
         /// <summary>

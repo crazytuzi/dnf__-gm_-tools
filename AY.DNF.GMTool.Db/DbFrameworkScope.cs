@@ -61,11 +61,12 @@ namespace AY.DNF.GMTool.Db
         {
             try
             {
+                var baseConn = $"Server={server};Port={port};Uid={userName};Pwd={pwd};Charset=utf8;AllowZeroDateTime=True;ConvertZeroDateTime=True;";
                 _dTaiwan = new SqlSugarScope(new ConnectionConfig
                 {
                     DbType = DbType.MySql,
                     ConfigId = "d_taiwan",
-                    ConnectionString = $"Server={server};Port={port};Database=d_taiwan;Uid={userName};Pwd={pwd};Charset=utf8;AllowZeroDateTime=True;ConvertZeroDateTime=True",
+                    ConnectionString = $"{baseConn}Database=d_taiwan;",
                     IsAutoCloseConnection = true,
                 });
 
@@ -73,7 +74,7 @@ namespace AY.DNF.GMTool.Db
                 {
                     DbType = DbType.MySql,
                     ConfigId = "taiwan_cain",
-                    ConnectionString = $"Server={server};Port={port};Database=taiwan_cain;Uid={userName};Pwd={pwd};Charset=utf8;AllowZeroDateTime=True;ConvertZeroDateTime=True",
+                    ConnectionString = $"{baseConn}Database=taiwan_cain;",
                     IsAutoCloseConnection = true,
                 });
 
@@ -81,7 +82,7 @@ namespace AY.DNF.GMTool.Db
                 {
                     DbType = DbType.MySql,
                     ConfigId = "taiwan_billing",
-                    ConnectionString = $"Server={server};Port={port};Database=taiwan_billing;Uid={userName};Pwd={pwd};Charset=utf8;AllowZeroDateTime=True;ConvertZeroDateTime=True",
+                    ConnectionString = $"{baseConn}Database=taiwan_billing;",
                     IsAutoCloseConnection = true,
                 });
 
@@ -89,11 +90,15 @@ namespace AY.DNF.GMTool.Db
                 {
                     DbType = DbType.MySql,
                     ConfigId = "taiwan_cain_2nd",
-                    ConnectionString = $"Server={server};Port={port};Database=taiwan_cain_2nd;Uid={userName};Pwd={pwd};Charset=utf8;AllowZeroDateTime=True;ConvertZeroDateTime=True",
+                    ConnectionString = $"{baseConn}Database=taiwan_cain_2nd;",
                     IsAutoCloseConnection = true,
                 });
 
-                var sqliteDb = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "LocalData", "dnf.db");
+                var sqliteDb = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "LocalData");
+                if (!Directory.Exists(sqliteDb))
+                    Directory.CreateDirectory(sqliteDb);
+                sqliteDb = Path.Combine(sqliteDb, "dnf.db");
+
                 _gmToolDb = new SqlSugarScope(new ConnectionConfig
                 {
                     DbType = DbType.Sqlite,
@@ -126,7 +131,7 @@ namespace AY.DNF.GMTool.Db
             }
             catch (Exception ex)
             {
-                TiaoTiaoNLogger.LogDebug(ex.Message);
+                TiaoTiaoNLogger.LogError(ex.Message);
                 return false;
             }
         }

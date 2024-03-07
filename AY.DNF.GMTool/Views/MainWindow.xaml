@@ -397,6 +397,7 @@
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="300" />
                 <ColumnDefinition />
+                <ColumnDefinition />
                 <ColumnDefinition Width="200" />
             </Grid.ColumnDefinitions>
 
@@ -422,7 +423,33 @@
                     BorderThickness="0"
                     Command="{Binding GotoDownloadCommand}"
                     Content="[ 下载更新 ]"
+                    Foreground="Blue"
                     Visibility="{Binding IsShowDownload}" />
+            </StackPanel>
+
+            <StackPanel
+                Grid.Column="1"
+                HorizontalAlignment="Center"
+                VerticalAlignment="Center"
+                Orientation="Horizontal">
+                <Border
+                    Width="20"
+                    Height="20"
+                    Background="{Binding StateColor}"
+                    CornerRadius="20">
+                    <Border.Effect>
+                        <DropShadowEffect
+                            BlurRadius="10"
+                            ShadowDepth="0"
+                            Color="{Binding EffectColor}" />
+                    </Border.Effect>
+                </Border>
+                <TextBlock
+                    Width="100"
+                    HorizontalAlignment="Center"
+                    VerticalAlignment="Center"
+                    Foreground="{Binding StateColor}"
+                    Text="{Binding PingStateStr}" />
             </StackPanel>
 
             <TextBlock
