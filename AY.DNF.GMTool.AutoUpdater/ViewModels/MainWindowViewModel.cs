@@ -88,8 +88,6 @@ namespace AY.DNF.GMTool.AutoUpdater.ViewModels
         {
             try
             {
-                TiaoTiaoNLogger.LogDebug($"下载地址：{url}");
-
                 var fileName = url.Split("/", StringSplitOptions.RemoveEmptyEntries).Last();
                 var filePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "download");
                 if (!Directory.Exists(filePath))
@@ -98,8 +96,6 @@ namespace AY.DNF.GMTool.AutoUpdater.ViewModels
                 using var client = new HttpClient();
                 var headerRes = await client.GetAsync(url, HttpCompletionOption.ResponseHeadersRead);
                 var realUrl = headerRes.RequestMessage.RequestUri.OriginalString;
-
-                TiaoTiaoNLogger.LogDebug($"真实下载地址：{realUrl}");
 
                 var stream = await client.GetStreamAsync(realUrl);
                 var totalLen = headerRes.Content.Headers.ContentLength;
