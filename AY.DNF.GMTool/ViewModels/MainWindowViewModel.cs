@@ -298,11 +298,27 @@ namespace AY.DNF.GMTool.ViewModels
         /// </summary>
         public ICommand ChangePwdCommand => _changePwdCommand ??= new DelegateCommand(DoChangePwdCommand);
 
-        ICommand _gameStartCommand;
+        ICommand? _gameStartCommand;
         /// <summary>
         /// 使用游戏启动器启动游戏
         /// </summary>
         public ICommand GameStartCommand => _gameStartCommand ??= new DelegateCommand(DoGameStartCommand);
+
+        #region 版本&下载
+
+        ICommand? _showLastVersionInfoCommand;
+        /// <summary>
+        /// 显示最后更新版本信息
+        /// </summary>
+        public ICommand ShowLastVersionInfoCommand => _showLastVersionInfoCommand ??= new DelegateCommand(DoShowLastVersionInfoCommand);
+
+        ICommand? _gotoDownloadCommand;
+        /// <summary>
+        /// 下载
+        /// </summary>
+        public ICommand GotoDownloadCommand => _gotoDownloadCommand ??= new DelegateCommand(DoGotoDownloadCommand);
+
+        #endregion
 
         #endregion
 
@@ -323,22 +339,14 @@ namespace AY.DNF.GMTool.ViewModels
             Application.Current.Shutdown();
         });
 
-        ICommand? _showLastVersionInfoCommand;
-        /// <summary>
-        /// 显示最后更新版本信息
-        /// </summary>
-        public ICommand ShowLastVersionInfoCommand => _showLastVersionInfoCommand ??= new DelegateCommand(DoShowLastVersionInfoCommand);
-
-        ICommand? _gotoDownloadCommand;
-
-        public ICommand GotoDownloadCommand => _gotoDownloadCommand ??= new DelegateCommand(DoGotoDownloadCommand);
-
         public MainWindowViewModel(IModuleManager moduleManager, IRegionManager regionManager)
         {
             _moduleMng = moduleManager;
             _regionMng = regionManager;
 
             LoadCfg();
+
+            #region 系统时间
 
             _timeTaskCancelTokenSource = new CancellationTokenSource();
             var ct = _timeTaskCancelTokenSource.Token;
@@ -358,6 +366,10 @@ namespace AY.DNF.GMTool.ViewModels
             }, ct);
             _timeTask.Start();
 
+            #endregion
+
+            #region Ping服务器状态
+
             _pingTaskCancelTokenSource = new CancellationTokenSource();
             var pct = _pingTaskCancelTokenSource.Token;
 
@@ -367,14 +379,16 @@ namespace AY.DNF.GMTool.ViewModels
                 {
                     if (ct.IsCancellationRequested) return;
 
-                    if (!string.IsNullOrWhiteSpace(Server))                    
-                        PingServer();                    
+                    if (!string.IsNullOrWhiteSpace(Server))
+                        PingServer();
 
                     // 第分钟ping一次
                     Task.Delay(60 * 1000);
                 }
             });
             _pingTask.Start();
+
+            #endregion
 
             Task.Run(() =>
             {
@@ -385,6 +399,9 @@ namespace AY.DNF.GMTool.ViewModels
             });
         }
 
+        /// <summary>
+        /// 最新版本信息
+        /// </summary>
         void GetLastVersion()
         {
             _lastVersionBody = string.Empty;
@@ -410,6 +427,9 @@ namespace AY.DNF.GMTool.ViewModels
             _lastVersionBody = verInfo.Value.body;
         }
 
+        /// <summary>
+        /// Ping服务器，检测服务器是否在线
+        /// </summary>
         async void PingServer()
         {
             var p = new Ping();
@@ -477,7 +497,6 @@ namespace AY.DNF.GMTool.ViewModels
 
             try
             {
-
                 var loginInfo = await new LoginService().Login(SearchAccount);
 
                 if (loginInfo == null)
@@ -720,7 +739,7 @@ namespace AY.DNF.GMTool.ViewModels
 
         #endregion    
 
-        ICommand _testCommand;
+        ICommand? _testCommand;
 
         public ICommand TestCommand => _testCommand ??= new DelegateCommand(DoTestCommand);
 
