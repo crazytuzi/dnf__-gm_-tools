@@ -80,7 +80,7 @@ namespace AY.DNF.GMTool.ViewModels
             set { SetProperty(ref _lastVersionBody, value); }
         }
 
-        private Visibility _isShowDownload;
+        private Visibility _isShowDownload = Visibility.Hidden;
 
         public Visibility IsShowDownload
         {
