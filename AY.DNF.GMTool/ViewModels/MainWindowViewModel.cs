@@ -207,7 +207,11 @@ namespace AY.DNF.GMTool.ViewModels
         public string? ExeFilePath
         {
             get { return _exeFilePath; }
-            set { SetProperty(ref _exeFilePath, value); }
+            set
+            {
+                SetProperty(ref _exeFilePath, value);
+                WriteCfg();
+            }
         }
 
         #endregion
