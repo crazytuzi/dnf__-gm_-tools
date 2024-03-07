@@ -15,8 +15,8 @@
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="10" />
-            <RowDefinition />
-            <RowDefinition />
+            <RowDefinition Height="auto" />
+            <RowDefinition Height="auto" />
             <RowDefinition />
             <RowDefinition Height="10" />
         </Grid.RowDefinitions>
@@ -39,7 +39,6 @@
             Grid.Row="1"
             Grid.Column="2"
             Style="{DynamicResource ProgressBarInfo}"
-             
             Value="{Binding DownloadProgress, StringFormat={}{0:F1}}" />
 
         <TextBlock
@@ -61,6 +60,7 @@
             Margin="10"
             HorizontalAlignment="Right"
             Command="{Binding FinishCommand}"
-            Content="完成" />
+            Content="完成"
+            IsEnabled="{Binding FinishEnabled}" />
     </Grid>
 </Window>

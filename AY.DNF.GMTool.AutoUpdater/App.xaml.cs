@@ -2,6 +2,7 @@
 using Prism.DryIoc;
 using Prism.Ioc;
 using System.Windows;
+using TiaoTiaoCode.NLogger;
 
 namespace AY.DNF.GMTool.AutoUpdater
 {
@@ -13,7 +14,13 @@ namespace AY.DNF.GMTool.AutoUpdater
         string _url;
         protected override void OnStartup(StartupEventArgs e)
         {
-            _url = e.Args[0];
+            TiaoTiaoNLogger.FastNoDatabaseInit();
+
+            if (e.Args.Length <= 0)
+                _url = string.Empty;
+            else
+                _url = e.Args[0];
+
             base.OnStartup(e);
         }
 
@@ -24,6 +31,7 @@ namespace AY.DNF.GMTool.AutoUpdater
 
         protected override void RegisterTypes(IContainerRegistry containerRegistry)
         {
+            
         }
     }
 }

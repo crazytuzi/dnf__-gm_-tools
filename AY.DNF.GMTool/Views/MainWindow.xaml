@@ -421,7 +421,7 @@
                     Margin="3,0,0,0"
                     BorderThickness="0"
                     Command="{Binding GotoDownloadCommand}"
-                    Content="[ 去下载 ]"
+                    Content="[ 下载更新 ]"
                     Visibility="{Binding IsShowDownload}" />
             </StackPanel>
 

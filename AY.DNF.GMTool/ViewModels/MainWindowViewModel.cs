@@ -19,6 +19,7 @@ using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Security.Cryptography.Xml;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
@@ -36,7 +37,7 @@ namespace AY.DNF.GMTool.ViewModels
         readonly Task _timeTask;
         readonly CancellationTokenSource _timeTaskCancelTokenSource;
 
-
+        string? _downloadUrl;
 
         #region 属性
 
@@ -52,7 +53,7 @@ namespace AY.DNF.GMTool.ViewModels
 
         #region 版本相关
 
-        private string _version = "1.0.20240221";
+        private string _version = "1.0.20240101";
         /// <summary>
         /// 显示的自定义版本号
         /// </summary>
@@ -283,13 +284,7 @@ namespace AY.DNF.GMTool.ViewModels
 
         ICommand? _gotoDownloadCommand;
 
-        public ICommand GotoDownloadCommand => _gotoDownloadCommand ??= new DelegateCommand(() =>
-        {
-            Process.Start(new ProcessStartInfo($"https://gitee.com/AsakuraYou/dnf__-gm_-tools/releases/tag/{_lastReleaseVersion}")
-            {
-                UseShellExecute = true
-            });
-        });
+        public ICommand GotoDownloadCommand => _gotoDownloadCommand ??= new DelegateCommand(DoGotoDownloadCommand);
 
         public MainWindowViewModel(IModuleManager moduleManager, IRegionManager regionManager)
         {
@@ -328,6 +323,7 @@ namespace AY.DNF.GMTool.ViewModels
         void GetLastVersion()
         {
             _lastVersionBody = string.Empty;
+            _downloadUrl = string.Empty;
 
             var verInfo = VersionHelper.Get();
 
@@ -345,6 +341,7 @@ namespace AY.DNF.GMTool.ViewModels
             else
                 IsShowDownload = Visibility.Hidden;
 
+            _downloadUrl = verInfo.Value.ReleaseAssets.Value.browser_download_url;
             _lastVersionBody = verInfo.Value.body;
         }
 
@@ -555,6 +552,34 @@ namespace AY.DNF.GMTool.ViewModels
         void DoShowLastVersionInfoCommand()
         {
             HandyControl.Controls.MessageBox.Show(_lastVersionBody, _lastReleaseVersion);
+        }
+
+        void DoGotoDownloadCommand()
+        {
+            if (string.IsNullOrWhiteSpace(_downloadUrl))
+            {
+                Growl.Error("未获取到最新程序下载地址，请手动下载");
+                return;
+            }
+
+            var updaterPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "AutoUpdater", "AY.DNF.GMTool.AutoUpdater.exe");
+            if (!File.Exists(updaterPath))
+            {
+                Growl.Error("自动更新器不存在，请重新下载完整版");
+                return;
+            }
+
+            try
+            {
+                var pi = new ProcessStartInfo(updaterPath, _downloadUrl) { UseShellExecute = true };
+                Process.Start(pi);
+            }
+            catch (Exception ex)
+            {
+                TiaoTiaoNLogger.LogError("自动更新异常：" + ex.Message);
+            }
+
+            Process.GetCurrentProcess().Kill();
         }
 
         #endregion
