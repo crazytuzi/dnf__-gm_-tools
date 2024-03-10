@@ -38,11 +38,6 @@ namespace AY.DNF.GMTool.Db
         /// </summary>
         public static SqlSugarScope TaiwanCain2nd => _taiwanCain2nd!;
 
-        ///// <summary>
-        ///// 本地数据
-        ///// </summary>
-        //public static SqlSugarScope LocalDb => _localDb!;
-
         /// <summary>
         /// GM工具数据库
         /// </summary>

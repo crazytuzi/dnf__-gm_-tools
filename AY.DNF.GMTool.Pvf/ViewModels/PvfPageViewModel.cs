@@ -382,6 +382,11 @@ namespace AY.DNF.GMTool.Pvf.ViewModels
                     continue;
                 }
                 var eduInfos = equipEdu.Split("\r\n", StringSplitOptions.RemoveEmptyEntries).Where(t => !t.StartsWith("#")).ToList();
+                if (eduInfos.Count <= 0)
+                {
+                    DispatcherInfos(() => EquipmentCount = $"{(i + 1)}/{total}");
+                    continue;
+                }
                 var index = eduInfos.IndexOf("[name]");
                 var name = eduInfos[index + 1].Replace("`", "");
 
@@ -605,7 +610,13 @@ namespace AY.DNF.GMTool.Pvf.ViewModels
                         DispatcherInfos(() => StackableCount = $"{(i + 1)}/{total}");
                         continue;
                     }
+
                     var eduInfos = stackableEdu.Split("\r\n", StringSplitOptions.RemoveEmptyEntries).Where(t => !t.StartsWith("#")).ToList();
+                    if (eduInfos.Count <= 0)
+                    {
+                        DispatcherInfos(() => StackableCount = $"{(i + 1)}/{total}");
+                        continue;
+                    }
 
                     var names = GetPvfPart(eduInfos, "[name]");
                     if (names.Count <= 0)
@@ -696,6 +707,8 @@ namespace AY.DNF.GMTool.Pvf.ViewModels
                 var jobs = jobInfo.Split("\r\n", StringSplitOptions.RemoveEmptyEntries)
                                 .Where(t => !t.StartsWith("#"))
                                 .ToList();
+
+                if (jobs.Count <= 0) continue;
 
                 var startIndex = jobs.IndexOf("[job]");
                 var enJob = jobs[startIndex + 1].Replace("`", "").Replace("[", "").Replace("]", "");
@@ -870,6 +883,8 @@ namespace AY.DNF.GMTool.Pvf.ViewModels
                                     .Split("\r\n", StringSplitOptions.RemoveEmptyEntries)
                                     .Where(t => !t.StartsWith("#"))
                                     .ToList();
+
+                if (questInfos.Count <= 0) continue;
 
                 // 任务等级
                 var questGrades = GetPvfPart(questInfos, "[grade]");
